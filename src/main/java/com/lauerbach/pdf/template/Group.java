@@ -1,5 +1,6 @@
 package com.lauerbach.pdf.template;
 
+import java.awt.PrintGraphics;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -8,11 +9,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 
+import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 
 public class Group extends PrintComponent {
-	Float border = null;
+	Float borderWidth = 0f;
 	String borderColor = "000000";
 
 	List<PrintComponent> children;
@@ -31,32 +33,25 @@ public class Group extends PrintComponent {
 
 	@Override
 	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
-		PrintedBounds bounds = new PrintedBounds(x, y, 0, 0);
-		Iterator<PrintComponent> i = children.iterator();
-		while (i.hasNext()) {
-			PrintComponent c = i.next();
-			PrintedBounds childBound = c.print(offsetX + x, offsetY + y, context);
-			if (childBound != null) {
-				bounds.merge(childBound);
-			}
+		PdfHelper helper = context.getHelper();
+		
+		PrintedBounds bounds= null;
+		try {
+			bounds = helper.printGroup(id, offsetX, offsetY, x, y, w, h, borderWidth, borderColor, context, children);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if (border != null) {
-			try {
-				context.getHelper().printRectangle(offsetX + x, offsetY + y, bounds.getLeft(), bounds.getTop(),
-						bounds.getWidth(), bounds.getHeight(), border, borderColor);
-			} catch (IOException e) {
-			}
-		}
+		
 		return bounds;
 	}
 
 	@XmlAttribute
-	public Float getBorder() {
-		return border;
+	public Float getBorderWidth() {
+		return borderWidth;
 	}
 
-	public void setBorder(Float border) {
-		this.border = border;
+	public void setBorderWidth(Float borderWidth) {
+		this.borderWidth = borderWidth;
 	}
 
 	@XmlAttribute

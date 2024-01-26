@@ -17,13 +17,15 @@ public class Text extends PrintComponent {
 
 	protected String field;
 	protected Float fontSize = null;
+	
+	protected String textFormat = "left";
 
 	@Override
 	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
 		PdfHelper helper = context.getHelper();
 		PrintedBounds b= null;
 		try {
-			b= helper.printText(offsetX, offsetY, x, y, this.fontSize, color, TextFormat.left, value);
+			b= helper.printText(offsetX, offsetY, x, y, this.fontSize, color, TextFormat.fromName(textFormat), value);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -64,6 +66,15 @@ public class Text extends PrintComponent {
 
 	public void setFontSize(Float fontSize) {
 		this.fontSize = fontSize;
+	}
+
+	@XmlAttribute
+	public String getTextFormat() {
+		return textFormat;
+	}
+
+	public void setTextFormat(String textFormat) {
+		this.textFormat = textFormat;
 	}
 
 }

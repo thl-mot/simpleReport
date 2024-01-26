@@ -6,6 +6,7 @@ import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 
 public abstract class PrintComponent {
+	String id;
 	float x, y, w, h;
 
 	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
@@ -44,6 +45,15 @@ public abstract class PrintComponent {
 
 	public void setH(float h) {
 		this.h = h;
+	}
+
+	@XmlAttribute
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 }

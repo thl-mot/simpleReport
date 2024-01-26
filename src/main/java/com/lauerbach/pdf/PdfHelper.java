@@ -1,11 +1,11 @@
 package com.lauerbach.pdf;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -18,8 +18,8 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 
+import com.lauerbach.pdf.template.PrintComponent;
 import com.lauerbach.pdf.template.Template;
 
 public class PdfHelper {
@@ -78,10 +78,11 @@ public class PdfHelper {
 		pageHeight = page.getMediaBox().getHeight();
 		doc.addPage(page);
 		contentStream = new PDPageContentStream(doc, page);
+		
 	}
 
 	public void endDoc() throws IOException {
-		contentStream.close();
+		contentStream.close(); 
 		doc.save(new File(pdfFileName));
 		doc.close();
 	}
@@ -100,6 +101,7 @@ public class PdfHelper {
 		}
 		float x = offsetX + relX;
 		float y = offsetY + relY;
+		System.out.println("text " + x + " " + y + " " + value);
 
 		contentStream.beginText();
 		setColor(color);
@@ -111,11 +113,46 @@ public class PdfHelper {
 
 		float stringWidth = defaultFont.getStringWidth(value) / 1000 * 14f;
 
-		System.out.println("text " + x + " " + (pageHeight - y) + " " + value);
 
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
 	}
 
+	
+	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, Float fontSize, String color,
+			TextFormat textFormat, String decimalFormat, Object value) throws IOException {
+		if (fontSize == null) {
+			fontSize = defaultFontSize;
+		}
+		if (value == null) {
+			return null;
+		}
+		
+		if (decimalFormat==null) {
+			decimalFormat="#0.00";
+		}
+		DecimalFormat formatter = new DecimalFormat( decimalFormat);
+				
+		float x = offsetX + relX;
+		float y = offsetY + relY;
+		
+		String txtValue= formatter.format( value);
+		
+		System.out.println("text " + x + " " + y + " " + value);
+
+		contentStream.beginText();
+		setColor(color);
+
+		contentStream.newLineAtOffset(x, pageHeight - y - fontSize);
+		contentStream.setFont(defaultFont, fontSize);
+		contentStream.showText(value);
+		contentStream.endText();
+
+		float stringWidth = defaultFont.getStringWidth(value) / 1000 * 14f;
+
+
+		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
+	}
+	
 	public PrintedBounds printTextArea(float offsetX, float offsetY, float relX, float relY, float w, float h,
 			Float fontSize, String color, TextFormat textFormat, String value) throws IOException {
 		if (fontSize == null) {
@@ -129,6 +166,8 @@ public class PdfHelper {
 
 		float width = w;
 
+		System.out.println("textArea " + x + " " + y + " " + w + " " + h + " "+textFormat.name()+": " + value);
+		
 		contentStream.beginText();
 
 		setColor(color);
@@ -159,7 +198,6 @@ public class PdfHelper {
 		}
 		contentStream.endText();
 
-		System.out.println("textArea " + x + " " + (pageHeight - y) + " " + w + " " + h + " " + value);
 
 		return new PrintedBounds(relX, relY, relX + width, relY + printedHeight);
 	}
@@ -195,13 +233,13 @@ public class PdfHelper {
 			float lineWidth, String color) throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
+		System.out.println("line " + x + " " + y + " " + w + " " + h);
 
 		setColor(color);
 		contentStream.setLineWidth(lineWidth);
 		contentStream.moveTo(x, pageHeight - y);
 		contentStream.lineTo(x + w, pageHeight - y - h);
 		contentStream.stroke();
-		System.out.println("line " + x + " " + (h - y) + " " + w + " " + h);
 		return new PrintedBounds(relX, relY - lineWidth / 2, relX + w, relY + h + lineWidth / 2);
 	}
 
@@ -209,6 +247,7 @@ public class PdfHelper {
 			float lineWidth, String color) throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
+		System.out.println("rect " + x + " " + y + " " + w + " " + h);
 		setColor(color);
 		contentStream.setLineWidth(lineWidth);
 		contentStream.moveTo(x, pageHeight - y);
@@ -217,27 +256,37 @@ public class PdfHelper {
 		contentStream.lineTo(x, pageHeight - y - h);
 		contentStream.lineTo(x, pageHeight - y + lineWidth / 2);
 		contentStream.stroke();
-		System.out.println("rect " + x + " " + (h - y) + " " + w + " " + h);
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
 
-	public PrintedBounds printGroup(float offsetX, float offsetY, float relX, float relY, float w, float h,
-			float lineWidth, String color) throws IOException {
+	public PrintedBounds printGroup(String id, float offsetX, float offsetY, float relX, float relY, float w, float h,
+			float borderWidth, String borderColor, PrintContext printContext, List<PrintComponent> children)
+			throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
-		setColor(color);
-		contentStream.setLineWidth(lineWidth);
-		contentStream.moveTo(x, pageHeight - y);
-		contentStream.lineTo(x + w, pageHeight - y);
-		contentStream.lineTo(x + w, pageHeight - y - h);
-		contentStream.lineTo(x, pageHeight - y - h);
-		contentStream.lineTo(x, pageHeight - y + lineWidth / 2);
-		contentStream.stroke();
-		System.out.println("rect " + x + " " + (h - y) + " " + w + " " + h);
+		System.out.println("group("+id+") " + x + " " + y + " " + w + " " + h);
+
+		PrintedBounds bounds = new PrintedBounds(0, 0, 0, 0);
+		Iterator<PrintComponent> i = children.iterator();
+		while (i.hasNext()) {
+			PrintComponent c = i.next();
+			PrintedBounds childBound = c.print(x, y, printContext);
+			System.out.println(" "+childBound);
+			if (childBound != null) {
+				bounds.merge(childBound);
+			}
+		}
+		if (borderWidth != 0) {
+			try {
+				printRectangle(offsetX + x, offsetY + y, bounds.getLeft(), bounds.getTop(), bounds.getWidth(),
+						bounds.getHeight(), borderWidth, borderColor);
+			} catch (IOException e) {
+			}
+		}
+
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
-	
-	
+
 	public static void main(String[] args) throws JAXBException, IOException {
 		PdfHelper helper = new PdfHelper("target/test.pdf");
 		Template t = Template.parse(new File("src/main/resources/example.template.xml"));

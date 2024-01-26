@@ -42,4 +42,8 @@ public class PrintedBounds {
 		return bottom-top;
 	}
 
+	@Override
+	public String toString() {
+		return "bounds: "+left+" "+top+"    "+right+" "+bottom;
+	}
 }
