@@ -78,11 +78,11 @@ public class PdfHelper {
 		pageHeight = page.getMediaBox().getHeight();
 		doc.addPage(page);
 		contentStream = new PDPageContentStream(doc, page);
-		
+
 	}
 
 	public void endDoc() throws IOException {
-		contentStream.close(); 
+		contentStream.close();
 		doc.save(new File(pdfFileName));
 		doc.close();
 	}
@@ -113,12 +113,10 @@ public class PdfHelper {
 
 		float stringWidth = defaultFont.getStringWidth(value) / 1000 * 14f;
 
-
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
 	}
 
-	
-	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, Float fontSize, String color,
+	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, float w, Float fontSize, String color,
 			TextFormat textFormat, String decimalFormat, Object value) throws IOException {
 		if (fontSize == null) {
 			fontSize = defaultFontSize;
@@ -126,33 +124,43 @@ public class PdfHelper {
 		if (value == null) {
 			return null;
 		}
-		
-		if (decimalFormat==null) {
-			decimalFormat="#0.00";
+
+		if (value instanceof String) {
+			value= Double.parseDouble( (String)value);
 		}
-		DecimalFormat formatter = new DecimalFormat( decimalFormat);
-				
+		
+		if (decimalFormat == null) {
+			decimalFormat = "#0.00";
+		}
+		DecimalFormat formatter = new DecimalFormat(decimalFormat);
+
 		float x = offsetX + relX;
 		float y = offsetY + relY;
-		
-		String txtValue= formatter.format( value);
-		
-		System.out.println("text " + x + " " + y + " " + value);
+
+		String textValue = formatter.format(value);
+
+		System.out.println("number " + x + " " + y + " " + textValue);
 
 		contentStream.beginText();
+
+		float stringWidth = defaultFont.getStringWidth(textValue) / 1000 * 14f;
+
 		setColor(color);
 
-		contentStream.newLineAtOffset(x, pageHeight - y - fontSize);
+		if (textFormat== TextFormat.left || w==0) {
+			contentStream.newLineAtOffset(x, pageHeight - y - fontSize);
+		} else {
+			contentStream.newLineAtOffset(x+w-stringWidth, pageHeight - y - fontSize);
+			stringWidth= w;
+		}
+		
 		contentStream.setFont(defaultFont, fontSize);
-		contentStream.showText(value);
+		contentStream.showText(textValue);
 		contentStream.endText();
-
-		float stringWidth = defaultFont.getStringWidth(value) / 1000 * 14f;
-
 
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
 	}
-	
+
 	public PrintedBounds printTextArea(float offsetX, float offsetY, float relX, float relY, float w, float h,
 			Float fontSize, String color, TextFormat textFormat, String value) throws IOException {
 		if (fontSize == null) {
@@ -166,8 +174,8 @@ public class PdfHelper {
 
 		float width = w;
 
-		System.out.println("textArea " + x + " " + y + " " + w + " " + h + " "+textFormat.name()+": " + value);
-		
+		System.out.println("textArea " + x + " " + y + " " + w + " " + h + " " + textFormat.name() + ": " + value);
+
 		contentStream.beginText();
 
 		setColor(color);
@@ -197,7 +205,6 @@ public class PdfHelper {
 			printedHeight += LEADING;
 		}
 		contentStream.endText();
-
 
 		return new PrintedBounds(relX, relY, relX + width, relY + printedHeight);
 	}
@@ -264,14 +271,14 @@ public class PdfHelper {
 			throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
-		System.out.println("group("+id+") " + x + " " + y + " " + w + " " + h);
+		System.out.println("group(" + id + ") " + x + " " + y + " " + w + " " + h);
 
 		PrintedBounds bounds = new PrintedBounds(0, 0, 0, 0);
 		Iterator<PrintComponent> i = children.iterator();
 		while (i.hasNext()) {
 			PrintComponent c = i.next();
 			PrintedBounds childBound = c.print(x, y, printContext);
-			System.out.println(" "+childBound);
+			System.out.println(" " + childBound);
 			if (childBound != null) {
 				bounds.merge(childBound);
 			}

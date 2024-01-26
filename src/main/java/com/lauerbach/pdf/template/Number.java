@@ -1,23 +1,28 @@
 package com.lauerbach.pdf.template;
 
+import java.io.IOException;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
+import com.lauerbach.pdf.TextFormat;
 
-@XmlRootElement( name="number")
-@XmlAccessorType( XmlAccessType.PROPERTY)
-public class Number extends PrintComponent {
+@XmlRootElement(name = "number")
+@XmlAccessorType(XmlAccessType.PROPERTY)
+public class Number extends Text {
 
-	private String format="0.00";
+	private String format = "0.00";
+
+	public Number() {
+		super();
+		textFormat="right";
+	}
 	
-	private Double value;
-	
-	private String field;
-
 	@XmlAttribute
 	public String getFormat() {
 		return format;
@@ -27,27 +32,17 @@ public class Number extends PrintComponent {
 		this.format = format;
 	}
 
-	@XmlAttribute
-	public Double getValue() {
-		return value;
-	}
-
-	public void setValue(Double value) {
-		this.value = value;
-	}
-
-	@XmlAttribute
-	public String getField() {
-		return field;
-	}
-
-	public void setField(String field) {
-		this.field = field;
-	}
-
 	@Override
-	public PrintedBounds print( float offsetX, float offsetY, PrintContext context) {
-		return null;
+	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
+		PdfHelper helper = context.getHelper();
+		PrintedBounds b = null;
+		try {
+			b = helper.printNumber(offsetX, offsetY, x, y, w, this.fontSize, color, TextFormat.fromName(textFormat),
+					format, value);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return b;
 	}
 
 }
