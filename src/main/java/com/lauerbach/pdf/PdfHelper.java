@@ -239,9 +239,8 @@ public class PdfHelper {
 	
 	
 	public static void main(String[] args) throws JAXBException, IOException {
-		PdfHelper helper = new PdfHelper("test.pdf");
-
-		Template t = Template.parse(new File("test.template.xml"));
+		PdfHelper helper = new PdfHelper("target/test.pdf");
+		Template t = Template.parse(new File("src/main/resources/example.template.xml"));
 		t.print(new PrintContext(helper, null));
 		helper.open();
 
