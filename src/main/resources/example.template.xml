@@ -13,9 +13,15 @@
 	<group id="3" borderWidth="1" x="0" y="200" borderColor="red">
 		<text x="0" y="0" value="Ein Textbaustein" color="00FF00" />
 		<line x="0" y="20" w="100" h="0" color="0000FF" />
-		<number x="0" y="40" value="1234.001" format="0.00 €"/>
-		<image x="150" y="0" h="50" src="src/main/resources/netzebw-logo.jpg"/>
-		<image x="150" y="50" w="100" src="src/main/resources/netzebw-logo.jpg"/>
+		<number x="0" y="40" value="1234.001" format="0.00 €" />
+		<image x="150" y="0" h="50"
+			src="src/main/resources/Feuerwehr-Emblem.jpg" />
+		<image x="150" y="50" w="100"
+			src="src/main/resources/Feuerwehr-Emblem.jpg" />
+		<image x="250" y="0" h="50" w="100"
+			src="src/main/resources/Feuerwehr-Emblem.jpg" />
+		<image x="250" y="50" h="100" w="50"
+			src="src/main/resources/Feuerwehr-Emblem.jpg" />
 	</group>
 	<list>
 		<firstHeader>

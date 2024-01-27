@@ -288,7 +288,14 @@ public class PdfHelper {
 		} else if (w==0 && h>0) {
 			pw= h /ratio;
 			ph= h;
-		} 
+		} else {
+			ph= w * ratio;
+			pw= w;
+			if (ph>h) {
+				pw= h /ratio;
+				ph= h;
+			}
+		}
 		
 		contentStream.drawImage(pdImage, x, pageHeight - y - ph, pw, ph);
 
