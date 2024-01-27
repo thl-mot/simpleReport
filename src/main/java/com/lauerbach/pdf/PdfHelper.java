@@ -16,19 +16,20 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import com.lauerbach.pdf.template.PrintComponent;
 
 public class PdfHelper {
 
 	private File pdfFile;
-	
+
 	private PDDocument doc;
 	private PDDocumentInformation info;
 	private PDPage page;
 	private float pageHeight = 0;
 	private PDPageContentStream contentStream;
-	
+
 	private PDType1Font defaultFont;
 	private Float defaultFontSize = 14f;
 
@@ -54,9 +55,9 @@ public class PdfHelper {
 			contentStream.setNonStrokingColor(colR, colG, colB);
 		}
 	}
-	
-	public PdfHelper( File file) {
-		this.pdfFile= file;
+
+	public PdfHelper(File file) {
+		this.pdfFile = file;
 	}
 
 	public void startDoc() throws IOException {
@@ -81,7 +82,7 @@ public class PdfHelper {
 
 	public void endDoc() throws IOException {
 		contentStream.close();
-		doc.save( pdfFile);
+		doc.save(pdfFile);
 		doc.close();
 	}
 
@@ -106,22 +107,22 @@ public class PdfHelper {
 		contentStream.endText();
 
 		float stringWidth = defaultFont.getStringWidth(value) / 1000 * fontSize;
-		float stringHeight= defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
+		float stringHeight = defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
 
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + stringHeight);
 	}
 
-	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, float w, Float fontSize, String color,
-			TextFormat textFormat, String decimalFormat, Object value) throws IOException {
+	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, float w, Float fontSize,
+			String color, TextFormat textFormat, String decimalFormat, Object value) throws IOException {
 		if (fontSize == null) {
 			fontSize = defaultFontSize;
 		}
 		if (value == null) {
 			return null;
 		} else if (value instanceof String) {
-			value= Double.parseDouble( (String)value);
+			value = Double.parseDouble((String) value);
 		}
-		
+
 		if (decimalFormat == null) {
 			decimalFormat = "#0.00";
 		}
@@ -137,17 +138,17 @@ public class PdfHelper {
 		contentStream.beginText();
 
 		float stringWidth = defaultFont.getStringWidth(textValue) / 1000 * 14f;
-		float stringHeight= defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
+		float stringHeight = defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
 
 		setColor(color);
 
-		if (textFormat== TextFormat.left || w==0) {
+		if (textFormat == TextFormat.left || w == 0) {
 			contentStream.newLineAtOffset(x, pageHeight - y - fontSize);
 		} else {
-			contentStream.newLineAtOffset(x+w-stringWidth, pageHeight - y - fontSize);
-			stringWidth= w;
+			contentStream.newLineAtOffset(x + w - stringWidth, pageHeight - y - fontSize);
+			stringWidth = w;
 		}
-		
+
 		contentStream.setFont(defaultFont, fontSize);
 		contentStream.showText(textValue);
 		contentStream.endText();
@@ -258,6 +259,40 @@ public class PdfHelper {
 		contentStream.lineTo(x, pageHeight - y + lineWidth / 2);
 		contentStream.stroke();
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
+	}
+
+	public PrintedBounds printImage(float offsetX, float offsetY, float relX, float relY, float w, float h, String src)
+			throws IOException {
+		float x = offsetX + relX;
+		float y = offsetY + relY;
+		System.out.println("image(" + src + ") " + x + " " + y + " " + w + " " + h);
+
+		PDImageXObject pdImage = PDImageXObject.createFromFile(src, doc);
+
+		int ih = pdImage.getHeight();
+		int iw = pdImage.getWidth();
+		
+		float ratio= 0;
+		
+		if (ih==0 || iw==0) {
+			return null;
+		} else {
+			ratio= (float)ih/(float)iw;
+		}
+		
+		float pw=w, ph=h;
+			
+		if (w>0 && h==0) {
+			ph= w * ratio;
+			pw= w;
+		} else if (w==0 && h>0) {
+			pw= h /ratio;
+			ph= h;
+		} 
+		
+		contentStream.drawImage(pdImage, x, pageHeight - y - ph, pw, ph);
+
+		return new PrintedBounds(relX, relY, relX + pw, relY + ph);
 	}
 
 	public PrintedBounds printGroup(String id, float offsetX, float offsetY, float relX, float relY, float w, float h,
