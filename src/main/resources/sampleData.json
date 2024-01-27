@@ -1,0 +1,15 @@
+{
+	"textField-1": "Text 1",
+	"numberField-1": 123.45,
+	"numberField-2": 1.23,
+	"textField-2": "Text 2",
+	"textField-3": "aaa bbb ccccc dd eeeee ffffffffff ggg hhhh iiiiiiiiiiii jj kkkkk lllll mmmmmmmm nnnnn oooo",
+
+	"listField" : [
+		{
+			"listText-1" : "Text-1 from Listelement 1",
+			"listText-2" : "Text-1 from Listelement 2",
+			"listNumber-1" : 1234.56
+		}
+	]
+}

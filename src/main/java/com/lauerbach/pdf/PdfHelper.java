@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -20,17 +18,17 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
 import com.lauerbach.pdf.template.PrintComponent;
-import com.lauerbach.pdf.template.Template;
 
 public class PdfHelper {
 
+	private File pdfFile;
+	
 	private PDDocument doc;
 	private PDDocumentInformation info;
 	private PDPage page;
 	private float pageHeight = 0;
 	private PDPageContentStream contentStream;
-
-	private String pdfFileName;
+	
 	private PDType1Font defaultFont;
 	private Float defaultFontSize = 14f;
 
@@ -56,9 +54,9 @@ public class PdfHelper {
 			contentStream.setNonStrokingColor(colR, colG, colB);
 		}
 	}
-
-	public PdfHelper(String pdfFileName) {
-		this.pdfFileName = pdfFileName;
+	
+	public PdfHelper( File file) {
+		this.pdfFile= file;
 	}
 
 	public void startDoc() throws IOException {
@@ -83,12 +81,8 @@ public class PdfHelper {
 
 	public void endDoc() throws IOException {
 		contentStream.close();
-		doc.save(new File(pdfFileName));
+		doc.save( pdfFile);
 		doc.close();
-	}
-
-	public void open() throws IOException {
-		Runtime.getRuntime().exec("okular " + pdfFileName);
 	}
 
 	public PrintedBounds printText(float offsetX, float offsetY, float relX, float relY, Float fontSize, String color,
@@ -111,9 +105,10 @@ public class PdfHelper {
 		contentStream.showText(value);
 		contentStream.endText();
 
-		float stringWidth = defaultFont.getStringWidth(value) / 1000 * 14f;
+		float stringWidth = defaultFont.getStringWidth(value) / 1000 * fontSize;
+		float stringHeight= defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
 
-		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
+		return new PrintedBounds(relX, relY, relX + stringWidth, relY + stringHeight);
 	}
 
 	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, float w, Float fontSize, String color,
@@ -123,9 +118,7 @@ public class PdfHelper {
 		}
 		if (value == null) {
 			return null;
-		}
-
-		if (value instanceof String) {
+		} else if (value instanceof String) {
 			value= Double.parseDouble( (String)value);
 		}
 		
@@ -144,6 +137,7 @@ public class PdfHelper {
 		contentStream.beginText();
 
 		float stringWidth = defaultFont.getStringWidth(textValue) / 1000 * 14f;
+		float stringHeight= defaultFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize;
 
 		setColor(color);
 
@@ -158,7 +152,7 @@ public class PdfHelper {
 		contentStream.showText(textValue);
 		contentStream.endText();
 
-		return new PrintedBounds(relX, relY, relX + stringWidth, relY + fontSize);
+		return new PrintedBounds(relX, relY, relX + stringWidth, relY + stringHeight);
 	}
 
 	public PrintedBounds printTextArea(float offsetX, float offsetY, float relX, float relY, float w, float h,
@@ -290,16 +284,7 @@ public class PdfHelper {
 			} catch (IOException e) {
 			}
 		}
-
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
-	}
-
-	public static void main(String[] args) throws JAXBException, IOException {
-		PdfHelper helper = new PdfHelper("target/test.pdf");
-		Template t = Template.parse(new File("src/main/resources/example.template.xml"));
-		t.print(new PrintContext(helper, null));
-		helper.open();
-
 	}
 
 	static {

@@ -10,7 +10,7 @@ public abstract class PrintComponent {
 	float x, y, w, h;
 
 	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
-
+	
 	@XmlAttribute
 	public float getX() {
 		return x;

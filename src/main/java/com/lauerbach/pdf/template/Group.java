@@ -34,14 +34,14 @@ public class Group extends PrintComponent {
 	@Override
 	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
 		PdfHelper helper = context.getHelper();
-		
-		PrintedBounds bounds= null;
+
+		PrintedBounds bounds = null;
 		try {
 			bounds = helper.printGroup(id, offsetX, offsetY, x, y, w, h, borderWidth, borderColor, context, children);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return bounds;
 	}
 

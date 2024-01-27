@@ -38,7 +38,7 @@ public class Number extends Text {
 		PrintedBounds b = null;
 		try {
 			b = helper.printNumber(offsetX, offsetY, x, y, w, this.fontSize, color, TextFormat.fromName(textFormat),
-					format, value);
+					format, getPrintValue(context));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

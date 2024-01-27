@@ -10,12 +10,9 @@ import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 import com.lauerbach.pdf.TextFormat;
 
-public class Text extends PrintComponent {
+public class Text extends ValuePrintComponent {
 
 	protected String color;
-	protected String value;
-
-	protected String field;
 	protected Float fontSize = null;
 	
 	protected String textFormat = "left";
@@ -25,29 +22,11 @@ public class Text extends PrintComponent {
 		PdfHelper helper = context.getHelper();
 		PrintedBounds b= null;
 		try {
-			b= helper.printText(offsetX, offsetY, x, y, this.fontSize, color, TextFormat.fromName(textFormat), value);
+			b= helper.printText(offsetX, offsetY, x, y, this.fontSize, color, TextFormat.fromName(textFormat), getPrintValueAsString(context));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return b;
-	}
-
-	@XmlAttribute
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	@XmlAttribute
-	public String getField() {
-		return field;
-	}
-
-	public void setField(String field) {
-		this.field = field;
 	}
 
 	@XmlAttribute

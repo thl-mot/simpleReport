@@ -15,7 +15,7 @@ public class TextArea extends Text {
 		PrintedBounds b = null;
 		try {
 			b = helper.printTextArea(offsetX, offsetY, x, y, w, h, this.fontSize, this.color,
-					TextFormat.valueOf(textFormat), this.value);
+					TextFormat.valueOf(textFormat), getPrintValueAsString(context));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
