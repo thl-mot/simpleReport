@@ -23,7 +23,7 @@ public class PrintContext {
 	public PrintContext(PrintContext parentContext) {
 		this.parent = parentContext;
 		this.helper = parentContext.getHelper();
-		this.currentData = currentData;
+		this.currentData = parentContext.currentData;
 	}
 
 	public PdfHelper getHelper() {

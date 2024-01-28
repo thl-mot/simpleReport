@@ -32,7 +32,9 @@
 			<text x="0" y="0" value="nächste Überschrift" color="00FF00" />
 		</otherHeader>
 		<repeatBlock>
-			<text x="0" y="0" value="Eintrag" color="00FF00" />
+			<text x="0" y="0" field="item.listText-1" color="00FF00" />
+			<number x="200" y="0" field="item.listNumber-1" color="00FF00" />
+			<text x="20" y="20" field="PARENT.textField-1" color="00FFFF" />
 		</repeatBlock>
 		<subtotalFooter>
 			<text x="0" y="0" value="Zwischensumme" color="00FF00" />
