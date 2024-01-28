@@ -8,8 +8,18 @@
 	"listField" : [
 		{
 			"listText-1" : "Text-1 from Listelement 1",
-			"listText-2" : "Text-1 from Listelement 2",
+			"listText-2" : "Text-2 from Listelement 1",
 			"listNumber-1" : 1234.56
+		},
+		{
+			"listText-1" : "Text-1 from Listelement 2",
+			"listText-2" : "Text-2 from Listelement 2",
+			"listNumber-1" : 12345.67
 		}
-	]
+	],
+
+	"object-1" : {
+		"id": 1,
+		"name": "field name of object-1"
+	}
 }

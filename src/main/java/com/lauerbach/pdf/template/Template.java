@@ -18,6 +18,10 @@ import com.lauerbach.pdf.PrintContext;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 public class Template extends Group {
 
+	public Template() {
+		x=0f; y=0f;
+	}
+
 	public static Template parse(File f) throws JAXBException {
 		JAXBContext jc = JAXBContext.newInstance(Template.class);
 		Unmarshaller u = jc.createUnmarshaller();

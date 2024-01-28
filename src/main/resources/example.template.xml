@@ -2,6 +2,7 @@
 	<group id="1" borderWidth="1" x="0" y="20" borderColor="red">
 		<text x="0" y="0" field="textField-1" color="00FF00" />
 		<line x="0" y="20" w="100" h="0" color="0000FF" />
+		<text x="0" y="25" w="50" field="object-1.name" />
 		<number x="0" y="50" w="50" field="numberField-1" />
 		<number x="0" y="70" w="50" field="numberField-2" />
 	</group>
@@ -23,7 +24,7 @@
 		<image x="250" y="50" h="100" w="50"
 			src="src/main/resources/Feuerwehr-Emblem.jpg" />
 	</group>
-	<list>
+	<list x="0" y="400" w="400" h="200" field="listField">
 		<firstHeader>
 			<text x="0" y="0" value="erste Überschrift" color="00FF00" />
 		</firstHeader>

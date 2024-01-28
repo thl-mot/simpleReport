@@ -18,6 +18,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import com.lauerbach.pdf.template.ListComponent;
 import com.lauerbach.pdf.template.PrintComponent;
 
 public class PdfHelper {
@@ -28,6 +29,7 @@ public class PdfHelper {
 	private PDDocumentInformation info;
 	private PDPage page;
 	private float pageHeight = 0;
+	private float pageWidth = 0;
 	private PDPageContentStream contentStream;
 
 	private PDType1Font defaultFont;
@@ -75,6 +77,7 @@ public class PdfHelper {
 		}
 		page = new PDPage(PDRectangle.A4);
 		pageHeight = page.getMediaBox().getHeight();
+		pageWidth = page.getMediaBox().getWidth();
 		doc.addPage(page);
 		contentStream = new PDPageContentStream(doc, page);
 
@@ -112,7 +115,7 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + stringHeight);
 	}
 
-	public PrintedBounds printNumber(float offsetX, float offsetY, float relX, float relY, float w, Float fontSize,
+	public PrintedBounds printNumber(float offsetX, float offsetY, Float relX, Float relY, Float w, Float fontSize,
 			String color, TextFormat textFormat, String decimalFormat, Object value) throws IOException {
 		if (fontSize == null) {
 			fontSize = defaultFontSize;
@@ -142,7 +145,7 @@ public class PdfHelper {
 
 		setColor(color);
 
-		if (textFormat == TextFormat.left || w == 0) {
+		if (textFormat == TextFormat.left || w == null || w == 0f) {
 			contentStream.newLineAtOffset(x, pageHeight - y - fontSize);
 		} else {
 			contentStream.newLineAtOffset(x + w - stringWidth, pageHeight - y - fontSize);
@@ -156,7 +159,7 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + stringWidth, relY + stringHeight);
 	}
 
-	public PrintedBounds printTextArea(float offsetX, float offsetY, float relX, float relY, float w, float h,
+	public PrintedBounds printTextArea(float offsetX, float offsetY, Float relX, Float relY, Float w, Float h,
 			Float fontSize, String color, TextFormat textFormat, String value) throws IOException {
 		if (fontSize == null) {
 			fontSize = defaultFontSize;
@@ -261,7 +264,7 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
 
-	public PrintedBounds printImage(float offsetX, float offsetY, float relX, float relY, float w, float h, String src)
+	public PrintedBounds printImage(float offsetX, float offsetY, Float relX, Float relY, Float w, Float h, String src)
 			throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
@@ -271,42 +274,42 @@ public class PdfHelper {
 
 		int ih = pdImage.getHeight();
 		int iw = pdImage.getWidth();
-		
-		float ratio= 0;
-		
-		if (ih==0 || iw==0) {
+
+		float ratio = 0;
+
+		if (ih == 0 || iw == 0) {
 			return null;
 		} else {
-			ratio= (float)ih/(float)iw;
+			ratio = (float) ih / (float) iw;
 		}
-		
-		float pw=w, ph=h;
-			
-		if (w>0 && h==0) {
-			ph= w * ratio;
-			pw= w;
-		} else if (w==0 && h>0) {
-			pw= h /ratio;
-			ph= h;
+
+		Float pw = w, ph = h;
+
+		if (w != null && w > 0 && (h == null || h == 0)) {
+			ph = w * ratio;
+			pw = w;
+		} else if ((w == null || w == 0) && h != null && h > 0) {
+			pw = h / ratio;
+			ph = h;
 		} else {
-			ph= w * ratio;
-			pw= w;
-			if (ph>h) {
-				pw= h /ratio;
-				ph= h;
+			ph = w * ratio;
+			pw = w;
+			if (ph > h) {
+				pw = h / ratio;
+				ph = h;
 			}
 		}
-		
+
 		contentStream.drawImage(pdImage, x, pageHeight - y - ph, pw, ph);
 
 		return new PrintedBounds(relX, relY, relX + pw, relY + ph);
 	}
 
-	public PrintedBounds printGroup(String id, float offsetX, float offsetY, float relX, float relY, float w, float h,
+	public PrintedBounds printGroup(String id, float offsetX, float offsetY, Float relX, Float relY, Float w, Float h,
 			float borderWidth, String borderColor, PrintContext printContext, List<PrintComponent> children)
 			throws IOException {
-		float x = offsetX + relX;
-		float y = offsetY + relY;
+		float x = offsetX + ((relX != null) ? relX : 0f);
+		float y = offsetY + ((relY != null) ? relY : 0f);
 		System.out.println("group(" + id + ") " + x + " " + y + " " + w + " " + h);
 
 		PrintedBounds bounds = new PrintedBounds(0, 0, 0, 0);
@@ -326,6 +329,72 @@ public class PdfHelper {
 			} catch (IOException e) {
 			}
 		}
+		// return new PrintedBounds(relX, relY, relX + w, relY + h);
+		return bounds;
+	}
+
+	public PrintedBounds printList(String id, float offsetX, float offsetY, PrintContext printContext,
+			ListComponent listComponent, java.util.Collection<?> repeatedData) throws IOException {
+		// Get Alltributes from compoennt
+		Float relX = listComponent.getX();
+		Float relY = listComponent.getY();
+		Float w = listComponent.getW();
+		Float h = listComponent.getH();
+		// borderWidth= list.getBorderWith;
+
+		// calculate position on paper
+		float x = offsetX + relX;
+		float y = offsetY + relY;
+		System.out.println("list(" + id + ") " + x + " " + y + " " + w + " " + h);
+
+		PrintedBounds bounds = new PrintedBounds(0, 0, 0, 0);
+
+		PrintedBounds childBounds = null;
+
+		float yEndOfFirstHeader = 0;
+		if (listComponent.getFirstHeader() != null) {
+			System.out.println("  firdstHeader");
+			childBounds = listComponent.getFirstHeader().print(x, y, printContext);
+			if (childBounds != null) {
+				bounds.merge(childBounds);
+				yEndOfFirstHeader = y + childBounds.getHeight();
+			}
+		} else {
+			System.out.println("  no firdstHeader");
+		}
+
+		PrintedBounds repeatedBlockBounds = new PrintedBounds(0, 0, 0, 0);
+
+		float repX = offsetX + relX;
+		float repY = yEndOfFirstHeader;
+
+		if (listComponent.getRepeatBlock() != null) {
+			Iterator<?> i = repeatedData.iterator();
+			while (i.hasNext()) {
+				System.out.println("  repeatedBlock");
+
+				Object repeatedDataEntry = i.next();
+
+				PrintContext subContext = new PrintContext(printContext);
+				subContext.setLocalVariable("item", repeatedDataEntry);
+
+				childBounds = listComponent.getRepeatBlock().print(repX, repY, subContext);
+				if (childBounds != null) {
+					bounds.merge(childBounds);
+					repY = repY + childBounds.getHeight();
+				}
+			}
+		} else {
+			System.out.println("  no repeatedBlock");
+		}
+
+//		if (borderWidth != 0) {
+//			try {
+//				printRectangle(offsetX + x, offsetY + y, bounds.getLeft(), bounds.getTop(), bounds.getWidth(),
+//						bounds.getHeight(), borderWidth, borderColor);
+//			} catch (IOException e) {
+//			}
+//		}
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
 

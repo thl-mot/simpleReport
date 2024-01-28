@@ -7,43 +7,43 @@ import com.lauerbach.pdf.PrintedBounds;
 
 public abstract class PrintComponent {
 	String id;
-	float x, y, w, h;
+	Float x, y, w, h;
 
 	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
 	
 	@XmlAttribute
-	public float getX() {
+	public Float getX() {
 		return x;
 	}
 
-	public void setX(float x) {
+	public void setX(Float x) {
 		this.x = x;
 	}
 
 	@XmlAttribute
-	public float getY() {
+	public Float getY() {
 		return y;
 	}
 
-	public void setY(float y) {
+	public void setY(Float y) {
 		this.y = y;
 	}
 
 	@XmlAttribute
-	public float getW() {
+	public Float getW() {
 		return w;
 	}
 
-	public void setW(float w) {
+	public void setW(Float w) {
 		this.w = w;
 	}
 
 	@XmlAttribute
-	public float getH() {
+	public Float getH() {
 		return h;
 	}
 
-	public void setH(float h) {
+	public void setH(Float h) {
 		this.h = h;
 	}
 
