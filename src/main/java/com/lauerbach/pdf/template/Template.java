@@ -18,6 +18,21 @@ import com.lauerbach.pdf.PrintContext;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 public class Template extends Group {
 
+	static class InitParentVisitor {
+		void visit( Group group) {
+			if (group.children!=null) {
+				Iterator<PrintComponent> i = group.children.iterator();
+				while (i.hasNext()) {
+					PrintComponent child = i.next();
+					child.setParent( group);
+					if (child instanceof Group) {
+						visit( ((Group)child));
+					}
+				}
+			}
+		}
+	}
+	
 	public Template() {
 		x=0f; y=0f;
 	}
@@ -25,6 +40,11 @@ public class Template extends Group {
 	public static Template parse(File f) throws JAXBException {
 		JAXBContext jc = JAXBContext.newInstance(Template.class);
 		Unmarshaller u = jc.createUnmarshaller();
+		
+		Template t= (Template) u.unmarshal(f);
+		
+		new InitParentVisitor().visit(t);
+		
 		return (Template) u.unmarshal(f);
 	}
 
