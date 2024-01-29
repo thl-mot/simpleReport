@@ -100,7 +100,7 @@ public class PdfHelper {
 			}
 			if (localValue != null) {
 				// fine
-			} else if ("PARENT".equals(name) && componentContext!=null && componentContext.parent!=null) {
+			} else if ("PARENT".equals(name) && componentContext != null && componentContext.parent != null) {
 				// referenze parent context
 				// TODO
 				localValue = getRecursiveValue(componentContext.parent, componentContext.parent.localData,
@@ -428,29 +428,32 @@ public class PdfHelper {
 			System.out.println("  no repeatedBlock");
 		}
 
+		float yBeginOfFooter = repY;
+		float yEndOfFooter = repY;
+
 		Group footer = listComponent.getTotalFooter();
 		if (footer != null) {
-			if (footer.getY()!=null) {
-				repY = y + footer.getY(); 
+			if (footer.getY() != null) {
+				yBeginOfFooter = y + footer.getY();
 			}
-			System.out.println("  firdstHeader");
-			childBounds = footer.print(this, x, repY);
+			System.out.println("  totalFooter");
+			childBounds = footer.print(this, x, yBeginOfFooter);
 			if (childBounds != null) {
 				bounds.merge(childBounds);
-				yEndOfFirstHeader = y + childBounds.getHeight();
+				yEndOfFooter = yBeginOfFooter + childBounds.getHeight();
 			}
 		} else {
-			System.out.println("  no firdstHeader");
+			System.out.println("  no totalFooter");
 		}
-		
-		
-//		if (borderWidth != 0) {
-//			try {
-//				printRectangle(offsetX + x, offsetY + y, bounds.getLeft(), bounds.getTop(), bounds.getWidth(),
-//						bounds.getHeight(), borderWidth, borderColor);
-//			} catch (IOException e) {
-//			}
-//		}
+
+		int borderWidth = 1;
+		String borderColor = "blue";
+		if (borderWidth != 0) {
+			try {
+				printRectangle(x, y, 0, 0, bounds.getWidth(), yEndOfFooter - y, borderWidth, borderColor);
+			} catch (IOException e) {
+			}
+		}
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
 
