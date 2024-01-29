@@ -1,8 +1,6 @@
 package com.lauerbach.pdf.template;
 
-import java.awt.PrintGraphics;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -10,7 +8,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 
 import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 
 public class Group extends PrintComponent {
@@ -32,12 +29,12 @@ public class Group extends PrintComponent {
 	}
 
 	@Override
-	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
-		PdfHelper helper = context.getHelper();
+	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
 
 		PrintedBounds bounds = null;
 		try {
-			bounds = helper.printGroup(id, offsetX, offsetY, x, y, w, h, borderWidth, borderColor, context, children);
+			// TODO
+			bounds = helper.printGroup(id, offsetX, offsetY, x, y, w, h, borderWidth, borderColor, children);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

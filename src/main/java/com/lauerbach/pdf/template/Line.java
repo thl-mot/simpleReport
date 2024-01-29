@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 
 public class Line extends PrintComponent {
@@ -14,8 +13,7 @@ public class Line extends PrintComponent {
 	float lineWidth= 2;
 
 	@Override
-	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
-		PdfHelper helper = context.getHelper();
+	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
 		PrintedBounds b= null;
 		try {
 			b= helper.printLine(offsetX, offsetY, x, y, w, h, lineWidth, color);

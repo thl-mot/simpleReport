@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 
 @XmlRootElement(name = "template")
 @XmlAccessorType(XmlAccessType.PROPERTY)
@@ -48,10 +47,9 @@ public class Template extends Group {
 		return (Template) u.unmarshal(f);
 	}
 
-	public void print(PrintContext context) throws IOException {
-		PdfHelper helper = context.getHelper();
+	public void print( PdfHelper helper) throws IOException {
 		helper.startDoc();
-		super.print(0, 0, context);
+		super.print(helper, 0, 0);
 		helper.endDoc();
 	}
 

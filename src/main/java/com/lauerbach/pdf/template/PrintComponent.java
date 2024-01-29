@@ -2,7 +2,7 @@ package com.lauerbach.pdf.template;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import com.lauerbach.pdf.PrintContext;
+import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintedBounds;
 
 public abstract class PrintComponent {
@@ -11,7 +11,7 @@ public abstract class PrintComponent {
 	
 	PrintComponent parent;
 
-	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
+	public abstract PrintedBounds print(PdfHelper helper, float offsetX, float offsetY);
 	
 	@XmlAttribute
 	public Float getX() {

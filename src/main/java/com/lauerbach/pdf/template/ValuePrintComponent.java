@@ -2,7 +2,7 @@ package com.lauerbach.pdf.template;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-import com.lauerbach.pdf.PrintContext;
+import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintedBounds;
 
 public abstract class ValuePrintComponent extends PrintComponent {
@@ -10,22 +10,22 @@ public abstract class ValuePrintComponent extends PrintComponent {
 	String value;
 	String field;
 
-	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
+	public abstract PrintedBounds print(PdfHelper helper, float offsetX, float offsetY);
 
-	public Object getPrintValue(PrintContext context) {
+	public Object getPrintValue(PdfHelper helper) {
 		if (field != null) {
-			Object o = context.getValue(field);
+			Object o = helper.getValue(field);
 			if (o == null && value != null) {
 				return value;
 			}
-			return context.getValue(field);
+			return helper.getValue(field);
 		} else {
 			return value;
 		}
 	}
 
-	public String getPrintValueAsString(PrintContext context) {
-		Object o = getPrintValue(context);
+	public String getPrintValueAsString(PdfHelper helper) {
+		Object o = getPrintValue(helper);
 		return o != null ? o + "" : null;
 	}
 

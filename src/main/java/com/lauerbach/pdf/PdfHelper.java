@@ -2,12 +2,15 @@ package com.lauerbach.pdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -18,12 +21,14 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import com.lauerbach.pdf.template.Group;
 import com.lauerbach.pdf.template.ListComponent;
 import com.lauerbach.pdf.template.PrintComponent;
 
 public class PdfHelper {
 
 	private File pdfFile;
+	private Object globalData;
 
 	private PDDocument doc;
 	private PDDocumentInformation info;
@@ -38,29 +43,12 @@ public class PdfHelper {
 	static final String hex = "0123456789ABCDEF";
 	static final HashMap<String, String> colorMap = new HashMap<String, String>();
 
-	private float hexToColor(String substring) {
-		return (float) (hex.indexOf(substring.charAt(0)) * 16 + hex.indexOf(substring.charAt(1))) * 1f / 255f;
-	}
-
-	private void setColor(String color) throws IOException {
-		if (colorMap.containsKey(color)) {
-			color = colorMap.get(color);
-		}
-		if (color == null || color.length() != 6) {
-			contentStream.setStrokingColor(0, 0, 0);
-			contentStream.setNonStrokingColor(0, 0, 0);
-		} else {
-			float colR = hexToColor(color.substring(0, 2));
-			float colG = hexToColor(color.substring(2, 4));
-			float colB = hexToColor(color.substring(4, 6));
-			contentStream.setStrokingColor(colR, colG, colB);
-			contentStream.setNonStrokingColor(colR, colG, colB);
-		}
-	}
-
-	public PdfHelper(File file) {
+	public PdfHelper(File file, Object globalData) {
 		this.pdfFile = file;
+		this.globalData = globalData;
 	}
+
+	// *************** Document handling ***************
 
 	public void startDoc() throws IOException {
 		doc = new PDDocument();
@@ -88,6 +76,59 @@ public class PdfHelper {
 		doc.save(pdfFile);
 		doc.close();
 	}
+
+	// *************** Data handling ***************
+
+	private Object getRecursiveValue(ComponentContext componentContext, Object data, String expression) {
+		int pos = expression.indexOf('.');
+		String name;
+		String subExpression = null;
+		if (pos < 0) {
+			name = expression;
+		} else if (pos == 0) {
+			// loopks like an error
+			return null;
+		} else {
+			name = expression.substring(0, pos);
+			subExpression = expression.substring(pos + 1);
+		}
+		try {
+			Object localValue = null;
+			// TODO
+			if (componentContext != null) {
+				localValue = componentContext.getLocalVariable(name);
+			}
+			if (localValue != null) {
+				// fine
+			} else if ("PARENT".equals(name) && componentContext!=null && componentContext.parent!=null) {
+				// referenze parent context
+				// TODO
+				localValue = getRecursiveValue(componentContext.parent, componentContext.parent.localData,
+						subExpression);
+				localValue = "TODO";
+			} else if (data == null) {
+				return null;
+			} else if (data instanceof Map) {
+				localValue = ((Map) data).get(name);
+			} else {
+				localValue = BeanUtils.getProperty(data, name);
+			}
+			if (subExpression != null && subExpression.trim().length() > 0) {
+				return getRecursiveValue(null, localValue, subExpression);
+			} else {
+				return localValue;
+			}
+		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			return null;
+		}
+	}
+
+	// TODO
+	public Object getValue(String name) {
+		return getRecursiveValue(null, globalData, name);
+	}
+
+	// *************** printing methods component implementations ***************
 
 	public PrintedBounds printText(float offsetX, float offsetY, float relX, float relY, Float fontSize, String color,
 			TextFormat textFormat, String value) throws IOException {
@@ -306,8 +347,7 @@ public class PdfHelper {
 	}
 
 	public PrintedBounds printGroup(String id, float offsetX, float offsetY, Float relX, Float relY, Float w, Float h,
-			float borderWidth, String borderColor, PrintContext printContext, List<PrintComponent> children)
-			throws IOException {
+			float borderWidth, String borderColor, List<PrintComponent> children) throws IOException {
 		float x = offsetX + ((relX != null) ? relX : 0f);
 		float y = offsetY + ((relY != null) ? relY : 0f);
 		System.out.println("group(" + id + ") " + x + " " + y + " " + w + " " + h);
@@ -316,7 +356,7 @@ public class PdfHelper {
 		Iterator<PrintComponent> i = children.iterator();
 		while (i.hasNext()) {
 			PrintComponent c = i.next();
-			PrintedBounds childBound = c.print(x, y, printContext);
+			PrintedBounds childBound = c.print(this, x, y);
 			System.out.println(" " + childBound);
 			if (childBound != null) {
 				bounds.merge(childBound);
@@ -333,8 +373,8 @@ public class PdfHelper {
 		return bounds;
 	}
 
-	public PrintedBounds printList(String id, float offsetX, float offsetY, PrintContext printContext,
-			ListComponent listComponent, java.util.Collection<?> repeatedData) throws IOException {
+	public PrintedBounds printList(String id, float offsetX, float offsetY, ListComponent listComponent,
+			java.util.Collection<?> repeatedData) throws IOException {
 		// Get Alltributes from compoennt
 		Float relX = listComponent.getX();
 		Float relY = listComponent.getY();
@@ -354,7 +394,7 @@ public class PdfHelper {
 		float yEndOfFirstHeader = 0;
 		if (listComponent.getFirstHeader() != null) {
 			System.out.println("  firdstHeader");
-			childBounds = listComponent.getFirstHeader().print(x, y, printContext);
+			childBounds = listComponent.getFirstHeader().print(this, x, y);
 			if (childBounds != null) {
 				bounds.merge(childBounds);
 				yEndOfFirstHeader = y + childBounds.getHeight();
@@ -375,10 +415,10 @@ public class PdfHelper {
 
 				Object repeatedDataEntry = i.next();
 
-				PrintContext subContext = new PrintContext(printContext);
+				ComponentContext subContext = new ComponentContext(null);
 				subContext.setLocalVariable("item", repeatedDataEntry);
 
-				childBounds = listComponent.getRepeatBlock().print(repX, repY, subContext);
+				childBounds = listComponent.getRepeatBlock().print(this, repX, repY);
 				if (childBounds != null) {
 					bounds.merge(childBounds);
 					repY = repY + childBounds.getHeight();
@@ -388,6 +428,22 @@ public class PdfHelper {
 			System.out.println("  no repeatedBlock");
 		}
 
+		Group footer = listComponent.getTotalFooter();
+		if (footer != null) {
+			if (footer.getY()!=null) {
+				repY = y + footer.getY(); 
+			}
+			System.out.println("  firdstHeader");
+			childBounds = footer.print(this, x, repY);
+			if (childBounds != null) {
+				bounds.merge(childBounds);
+				yEndOfFirstHeader = y + childBounds.getHeight();
+			}
+		} else {
+			System.out.println("  no firdstHeader");
+		}
+		
+		
 //		if (borderWidth != 0) {
 //			try {
 //				printRectangle(offsetX + x, offsetY + y, bounds.getLeft(), bounds.getTop(), bounds.getWidth(),
@@ -396,6 +452,28 @@ public class PdfHelper {
 //			}
 //		}
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
+	}
+
+	// ************** PRIVATE Methods **************
+
+	private float hexToColor(String substring) {
+		return (float) (hex.indexOf(substring.charAt(0)) * 16 + hex.indexOf(substring.charAt(1))) * 1f / 255f;
+	}
+
+	private void setColor(String color) throws IOException {
+		if (colorMap.containsKey(color)) {
+			color = colorMap.get(color);
+		}
+		if (color == null || color.length() != 6) {
+			contentStream.setStrokingColor(0, 0, 0);
+			contentStream.setNonStrokingColor(0, 0, 0);
+		} else {
+			float colR = hexToColor(color.substring(0, 2));
+			float colG = hexToColor(color.substring(2, 4));
+			float colB = hexToColor(color.substring(4, 6));
+			contentStream.setStrokingColor(colR, colG, colB);
+			contentStream.setNonStrokingColor(colR, colG, colB);
+		}
 	}
 
 	static {

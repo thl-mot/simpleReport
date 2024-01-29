@@ -17,8 +17,8 @@ public class SimpleReport {
 	
 	public boolean print( File file, Object data)  {
 		try {
-			PdfHelper helper = new PdfHelper(file);
-			template.print(new PrintContext(helper, data));
+			PdfHelper helper = new PdfHelper( file, data);
+			template.print( helper);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

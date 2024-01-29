@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
 
 @XmlRootElement(name = "list")
@@ -66,17 +65,17 @@ public class ListComponent extends ValuePrintComponent {
 	}
 
 	@Override
-	public PrintedBounds print(float offsetX, float offsetY, PrintContext context) {
-		PdfHelper helper = context.getHelper();
+	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
 
 		PrintedBounds bounds = null;
 		try {
 			Collection<?> collection= null;
-			Object obj = this.getPrintValue(context);
+			Object obj = this.getPrintValue(helper);
 			if (obj instanceof Collection) {
 				collection= (Collection<?>)obj;
 			} 
-			bounds = helper.printList(id, offsetX, offsetY, context, this, collection);
+			// TODO
+			bounds = helper.printList(id, offsetX, offsetY, this, collection);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

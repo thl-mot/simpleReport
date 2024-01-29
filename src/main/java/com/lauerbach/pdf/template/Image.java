@@ -8,9 +8,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.PrintedBounds;
-import com.lauerbach.pdf.TextFormat;
 
 @XmlRootElement( name="image")
 @XmlAccessorType( XmlAccessType.PROPERTY)
@@ -28,8 +26,7 @@ public class Image extends PrintComponent {
 	}
 
 	@Override
-	public PrintedBounds print( float offsetX, float offsetY, PrintContext context) {
-		PdfHelper helper = context.getHelper();
+	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
 		PrintedBounds b= null;
 		try {
 			b= helper.printImage(offsetX, offsetY, x, y, w, h, src);

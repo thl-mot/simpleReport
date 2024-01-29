@@ -36,10 +36,10 @@
 			<number x="200" y="0" field="item.listNumber-1" color="00FF00" />
 			<text x="20" y="20" field="PARENT.textField-1" color="00FFFF" />
 		</repeatBlock>
-		<subtotalFooter>
+		<subtotalFooter y="150">
 			<text x="0" y="0" value="Zwischensumme" color="00FF00" />
 		</subtotalFooter>
-		<totalFooter>
+		<totalFooter y="100">
 			<text x="0" y="0" value="Summe" color="00FF00" />
 		</totalFooter>
 	</list>
