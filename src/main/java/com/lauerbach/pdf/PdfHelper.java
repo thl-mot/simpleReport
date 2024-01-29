@@ -30,6 +30,8 @@ public class PdfHelper {
 	private File pdfFile;
 	private Object globalData;
 
+	ComponentContext activeContext = null;
+
 	private PDDocument doc;
 	private PDDocumentInformation info;
 	private PDPage page;
@@ -125,7 +127,7 @@ public class PdfHelper {
 
 	// TODO
 	public Object getValue(String name) {
-		return getRecursiveValue(null, globalData, name);
+		return getRecursiveValue(activeContext, globalData, name);
 	}
 
 	// *************** printing methods component implementations ***************
@@ -408,6 +410,8 @@ public class PdfHelper {
 		float repX = offsetX + relX;
 		float repY = yEndOfFirstHeader;
 
+		activeContext = new ComponentContext(activeContext);
+
 		if (listComponent.getRepeatBlock() != null) {
 			Iterator<?> i = repeatedData.iterator();
 			while (i.hasNext()) {
@@ -415,8 +419,7 @@ public class PdfHelper {
 
 				Object repeatedDataEntry = i.next();
 
-				ComponentContext subContext = new ComponentContext(null);
-				subContext.setLocalVariable("item", repeatedDataEntry);
+				activeContext.setLocalVariable("item", repeatedDataEntry);
 
 				childBounds = listComponent.getRepeatBlock().print(this, repX, repY);
 				if (childBounds != null) {

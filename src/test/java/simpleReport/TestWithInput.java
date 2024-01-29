@@ -1,7 +1,6 @@
 package simpleReport;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.HashMap;
 
@@ -9,10 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lauerbach.pdf.PdfHelper;
-import com.lauerbach.pdf.PrintContext;
 import com.lauerbach.pdf.SimpleReport;
-import com.lauerbach.pdf.template.Template;
 
 class TestWithInput {
 
