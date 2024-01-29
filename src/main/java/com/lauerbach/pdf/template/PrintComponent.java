@@ -8,6 +8,8 @@ import com.lauerbach.pdf.PrintedBounds;
 public abstract class PrintComponent {
 	String id;
 	Float x, y, w, h;
+	
+	PrintComponent parent;
 
 	public abstract PrintedBounds print(float offsetX, float offsetY, PrintContext context);
 	
@@ -56,4 +58,14 @@ public abstract class PrintComponent {
 		this.id = id;
 	}
 
+	public PrintComponent getParent() {
+		return parent;
+	}
+
+	public void setParent(PrintComponent parent) {
+		this.parent = parent;
+	}
+
+	
+	
 }
