@@ -18,44 +18,40 @@ import com.lauerbach.pdf.PdfHelper;
 public class Template extends Group {
 
 	static class InitParentVisitor {
-		void visit( Group group) {
-			if (group.children!=null) {
+		void visit(Group group) {
+			if (group.children != null) {
 				Iterator<PrintComponent> i = group.children.iterator();
 				while (i.hasNext()) {
 					PrintComponent child = i.next();
-					child.setParent( group);
+					child.setParent(group);
 					if (child instanceof Group) {
-						visit( ((Group)child));
+						visit(((Group) child));
 					}
 				}
 			}
 		}
 	}
-	
+
 	public Template() {
-		x=0f; y=0f;
+		x = 0f;
+		y = 0f;
 	}
 
 	public static Template parse(File f) throws JAXBException {
 		JAXBContext jc = JAXBContext.newInstance(Template.class);
 		Unmarshaller u = jc.createUnmarshaller();
-		
-		Template t= (Template) u.unmarshal(f);
-		
+
+		Template t = (Template) u.unmarshal(f);
+
 		new InitParentVisitor().visit(t);
-		
+
 		return (Template) u.unmarshal(f);
 	}
 
-	public void print( PdfHelper helper) throws IOException {
-		helper.startDoc();
-		super.print(helper, 0, 0);
-		helper.endDoc();
-	}
-
-	public static void main(String[] args) throws Exception {
-		Template t = Template.parse(new File("test.template.xml"));
-		System.out.println(t.getChildren().size());
+	public void print(PdfHelper helper) throws IOException {
+		helper.printPage(id, this.children);
+		// super.print(helper, 0, 0);
+		// helper.endDoc();
 	}
 
 }

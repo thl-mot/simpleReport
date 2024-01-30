@@ -33,7 +33,6 @@ public class Group extends PrintComponent {
 
 		PrintedBounds bounds = null;
 		try {
-			// TODO
 			bounds = helper.printGroup(id, offsetX, offsetY, x, y, w, h, borderWidth, borderColor, children);
 		} catch (IOException e) {
 			e.printStackTrace();

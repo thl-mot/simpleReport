@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,10 +28,17 @@ import com.lauerbach.pdf.template.PrintComponent;
 
 public class PdfHelper {
 
+	enum ReportState {
+		start, iterating, finish, breakPageAndContinue, nextPage;
+	}
+
 	private File pdfFile;
 	private Object globalData;
 
-	ComponentContext activeContext = null;
+	ListContext activeContext = null;
+	HashMap<String, ListContext> contextMap = new HashMap<String, ListContext>();
+
+	ReportState reportState = ReportState.start;
 
 	private PDDocument doc;
 	private PDDocumentInformation info;
@@ -81,7 +89,7 @@ public class PdfHelper {
 
 	// *************** Data handling ***************
 
-	private Object getRecursiveValue(ComponentContext componentContext, Object data, String expression) {
+	private Object getRecursiveValue(ListContext componentContext, Object data, String expression) {
 		int pos = expression.indexOf('.');
 		String name;
 		String subExpression = null;
@@ -348,6 +356,18 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + pw, relY + ph);
 	}
 
+	public void printPage(String id, List<PrintComponent> children) throws IOException {
+		startDoc();
+		while (reportState != ReportState.finish) {
+			printGroup(id, 0, 0, null, null, null, null, 0, null, children);
+			if (reportState == ReportState.breakPageAndContinue) {
+				newPage();
+				reportState= ReportState.nextPage;
+			}
+		}
+		endDoc();
+	}
+
 	public PrintedBounds printGroup(String id, float offsetX, float offsetY, Float relX, Float relY, Float w, Float h,
 			float borderWidth, String borderColor, List<PrintComponent> children) throws IOException {
 		float x = offsetX + ((relX != null) ? relX : 0f);
@@ -376,7 +396,7 @@ public class PdfHelper {
 	}
 
 	public PrintedBounds printList(String id, float offsetX, float offsetY, ListComponent listComponent,
-			java.util.Collection<?> repeatedData) throws IOException {
+			java.util.Collection<Object> repeatedData) throws IOException {
 		// Get Alltributes from compoennt
 		Float relX = listComponent.getX();
 		Float relY = listComponent.getY();
@@ -387,6 +407,7 @@ public class PdfHelper {
 		// calculate position on paper
 		float x = offsetX + relX;
 		float y = offsetY + relY;
+		Float breakAtY = null;
 		System.out.println("list(" + id + ") " + x + " " + y + " " + w + " " + h);
 
 		PrintedBounds bounds = new PrintedBounds(0, 0, 0, 0);
@@ -410,14 +431,13 @@ public class PdfHelper {
 		float repX = offsetX + relX;
 		float repY = yEndOfFirstHeader;
 
-		activeContext = new ComponentContext(activeContext);
+		this.activeContext = getContext(listComponent.getId(), repeatedData);
 
 		if (listComponent.getRepeatBlock() != null) {
-			Iterator<?> i = repeatedData.iterator();
-			while (i.hasNext()) {
+			int printedItemCount = 0;
+			while (this.activeContext.hashNext()) {
 				System.out.println("  repeatedBlock");
-
-				Object repeatedDataEntry = i.next();
+				Object repeatedDataEntry = this.activeContext.next();
 
 				activeContext.setLocalVariable("item", repeatedDataEntry);
 
@@ -425,6 +445,15 @@ public class PdfHelper {
 				if (childBounds != null) {
 					bounds.merge(childBounds);
 					repY = repY + childBounds.getHeight();
+					printedItemCount++;
+				}
+
+				if (listComponent.getBreakAt() != null && repY - offsetY > listComponent.getBreakAt()) {
+					reportState = ReportState.breakPageAndContinue;
+					break;
+				} else if (listComponent.getMaxRows() != null && printedItemCount >= listComponent.getMaxRows()) {
+					reportState = ReportState.breakPageAndContinue;
+					break;
 				}
 			}
 		} else {
@@ -434,7 +463,8 @@ public class PdfHelper {
 		float yBeginOfFooter = repY;
 		float yEndOfFooter = repY;
 
-		Group footer = listComponent.getTotalFooter();
+		Group footer = (reportState == ReportState.breakPageAndContinue) ? listComponent.getSubtotalFooter()
+				: listComponent.getTotalFooter();
 		if (footer != null) {
 			if (footer.getY() != null) {
 				yBeginOfFooter = y + footer.getY();
@@ -461,6 +491,22 @@ public class PdfHelper {
 	}
 
 	// ************** PRIVATE Methods **************
+
+	private ListContext getContext(String id, Collection<Object> repeatedData) {
+		ListContext context = contextMap.get(id);
+		if (context == null) {
+			context = new ListContext(this.activeContext, id, repeatedData);
+			contextMap.put(id, context);
+		}
+		this.activeContext = context;
+		return this.activeContext;
+	}
+
+	private ListContext popContext(String id) {
+		contextMap.remove(this.activeContext.getId());
+		this.activeContext = this.activeContext.getParent();
+		return this.activeContext;
+	}
 
 	private float hexToColor(String substring) {
 		return (float) (hex.indexOf(substring.charAt(0)) * 16 + hex.indexOf(substring.charAt(1))) * 1f / 255f;

@@ -1,18 +1,20 @@
 package com.lauerbach.pdf.template;
 
+import java.util.UUID;
+
 import javax.xml.bind.annotation.XmlAttribute;
 
 import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintedBounds;
 
 public abstract class PrintComponent {
-	String id;
+	String id = UUID.randomUUID().toString();
 	Float x, y, w, h;
-	
+
 	PrintComponent parent;
 
 	public abstract PrintedBounds print(PdfHelper helper, float offsetX, float offsetY);
-	
+
 	@XmlAttribute
 	public Float getX() {
 		return x;
@@ -66,6 +68,4 @@ public abstract class PrintComponent {
 		this.parent = parent;
 	}
 
-	
-	
 }
