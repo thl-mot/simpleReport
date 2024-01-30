@@ -10,11 +10,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.lauerbach.pdf.PdfHelper;
 import com.lauerbach.pdf.PrintedBounds;
 
-@XmlRootElement( name="image")
-@XmlAccessorType( XmlAccessType.PROPERTY)
+@XmlRootElement(name = "image")
+@XmlAccessorType(XmlAccessType.PROPERTY)
 public class Image extends PrintComponent {
 
 	private String src;
+	private String url;
+
+	@Override
+	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
+		PrintedBounds b = null;
+		try {
+			b = helper.printImage(offsetX, offsetY, x, y, w, h, src, url);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return b;
+	}
 
 	@XmlAttribute
 	public String getSrc() {
@@ -25,15 +37,13 @@ public class Image extends PrintComponent {
 		this.src = src;
 	}
 
-	@Override
-	public PrintedBounds print(PdfHelper helper, float offsetX, float offsetY) {
-		PrintedBounds b= null;
-		try {
-			b= helper.printImage(offsetX, offsetY, x, y, w, h, src);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return b;
+	@XmlAttribute
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 }

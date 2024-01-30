@@ -1,8 +1,12 @@
 package com.lauerbach.pdf;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -315,13 +319,24 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + w, relY + h);
 	}
 
-	public PrintedBounds printImage(float offsetX, float offsetY, Float relX, Float relY, Float w, Float h, String src)
-			throws IOException {
+	public PrintedBounds printImage(float offsetX, float offsetY, Float relX, Float relY, Float w, Float h, String src,
+			String url) throws IOException {
 		float x = offsetX + relX;
 		float y = offsetY + relY;
-		System.out.println("image(" + src + ") " + x + " " + y + " " + w + " " + h);
 
-		PDImageXObject pdImage = PDImageXObject.createFromFile(src, doc);
+		PDImageXObject pdImage = null;
+		if (src != null) {
+			System.out.println("image(" + src + ") " + x + " " + y + " " + w + " " + h);
+			pdImage = PDImageXObject.createFromFile(src, doc);
+		} else if (url != null && url.trim().length() > 0) {
+			System.out.println("image(" + url + ") " + x + " " + y + " " + w + " " + h);
+			BufferedInputStream is = new BufferedInputStream(new URL(url).openStream());
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			is.transferTo(bos);
+			is.close();
+			bos.close();
+			pdImage = PDImageXObject.createFromByteArray(doc, bos.toByteArray(), url);
+		}
 
 		int ih = pdImage.getHeight();
 		int iw = pdImage.getWidth();
@@ -350,9 +365,7 @@ public class PdfHelper {
 				ph = h;
 			}
 		}
-
 		contentStream.drawImage(pdImage, x, pageHeight - y - ph, pw, ph);
-
 		return new PrintedBounds(relX, relY, relX + pw, relY + ph);
 	}
 
@@ -362,7 +375,7 @@ public class PdfHelper {
 			printGroup(id, 0, 0, null, null, null, null, 0, null, children);
 			if (reportState == ReportState.breakPageAndContinue) {
 				newPage();
-				reportState= ReportState.iterating;
+				reportState = ReportState.iterating;
 			}
 		}
 		endDoc();
@@ -415,9 +428,11 @@ public class PdfHelper {
 		PrintedBounds childBounds = null;
 
 		float yEndOfFirstHeader = 0;
-		if (listComponent.getFirstHeader() != null) {
-			System.out.println("  firdstHeader");
-			childBounds = listComponent.getFirstHeader().print(this, x, y);
+		Group header = (reportState == ReportState.start) ? listComponent.getFirstHeader()
+				: listComponent.getOtherHeader();
+		if (header != null) {
+			System.out.println("  firstHeader");
+			childBounds = header.print(this, x, y);
 			if (childBounds != null) {
 				bounds.merge(childBounds);
 				yEndOfFirstHeader = y + childBounds.getHeight();
@@ -456,8 +471,8 @@ public class PdfHelper {
 					break;
 				}
 			}
-			if (!this.activeContext.hashNext() && this.activeContext.getParent()==null) {
-				popContext( listComponent.getId());
+			if (!this.activeContext.hashNext() && this.activeContext.getParent() == null) {
+				popContext(listComponent.getId());
 				reportState = ReportState.finish;
 			}
 		} else {

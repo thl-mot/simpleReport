@@ -23,6 +23,8 @@
 			src="src/main/resources/Feuerwehr-Emblem.jpg" />
 		<image x="250" y="50" h="100" w="50"
 			src="src/main/resources/Feuerwehr-Emblem.jpg" />
+		<image x="350" y="50" h="50" w="50"
+			url="https://noysee.netze-bw.de/assets/img/netzebw-logo.jpg" />
 	</group>
 	<list x="0" y="400" w="400" h="200" field="listField" maxRows="2">
 		<firstHeader>
@@ -32,8 +34,10 @@
 			<text x="0" y="0" value="nächste Überschrift" color="00FF00" />
 		</otherHeader>
 		<repeatBlock>
-			<text x="0" y="0" field="item.listText-1" value="*" color="00FF00" />
-			<number x="200" y="0" w="40" field="item.listNumber-1" color="00FF00" />
+			<text x="0" y="0" field="item.listText-1" value="*"
+				color="00FF00" />
+			<number x="200" y="0" w="40" field="item.listNumber-1"
+				color="00FF00" />
 			<text x="20" y="20" field="PARENT.textField-1" color="00FFFF" />
 		</repeatBlock>
 		<subtotalFooter>
