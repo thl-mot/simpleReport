@@ -362,7 +362,7 @@ public class PdfHelper {
 			printGroup(id, 0, 0, null, null, null, null, 0, null, children);
 			if (reportState == ReportState.breakPageAndContinue) {
 				newPage();
-				reportState= ReportState.finish;
+				reportState= ReportState.iterating;
 			}
 		}
 		endDoc();
@@ -457,6 +457,7 @@ public class PdfHelper {
 				}
 			}
 			if (!this.activeContext.hashNext() && this.activeContext.getParent()==null) {
+				popContext( listComponent.getId());
 				reportState = ReportState.finish;
 			}
 		} else {
