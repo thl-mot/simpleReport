@@ -362,7 +362,7 @@ public class PdfHelper {
 			printGroup(id, 0, 0, null, null, null, null, 0, null, children);
 			if (reportState == ReportState.breakPageAndContinue) {
 				newPage();
-				reportState= ReportState.nextPage;
+				reportState= ReportState.finish;
 			}
 		}
 		endDoc();
@@ -455,6 +455,9 @@ public class PdfHelper {
 					reportState = ReportState.breakPageAndContinue;
 					break;
 				}
+			}
+			if (!this.activeContext.hashNext() && this.activeContext.getParent()==null) {
+				reportState = ReportState.finish;
 			}
 		} else {
 			System.out.println("  no repeatedBlock");
