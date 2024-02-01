@@ -2,6 +2,9 @@ package com.lauerbach.pdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.xml.bind.JAXBException;
 
@@ -25,4 +28,25 @@ public class SimpleReport {
 			return false;
 		}
 	}
+	
+	public boolean printMultiFile( String baseName, Object... data)  {
+		return printMultiFile( baseName, Arrays.asList( data));
+	}
+	
+	public boolean printMultiFile( String baseName, Collection<Object> col)  {
+		try {
+			Iterator<Object> i = col.iterator();
+			int fileNo=0;
+			while (i.hasNext()) {
+				PdfHelper helper = new PdfHelper( new File( baseName+"-"+fileNo+".pdf"), i.next());
+				template.print( helper);
+				fileNo++;
+			}
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 }

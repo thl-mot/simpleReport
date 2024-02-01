@@ -1,7 +1,6 @@
 package com.lauerbach.pdf;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.util.Matrix;
 
 import com.lauerbach.pdf.template.Group;
 import com.lauerbach.pdf.template.ListComponent;
@@ -53,6 +53,8 @@ public class PdfHelper {
 
 	private PDType1Font defaultFont;
 	private Float defaultFontSize = 14f;
+	private PDRectangle pageSize;
+	private boolean landscape;
 
 	static final String hex = "0123456789ABCDEF";
 	static final HashMap<String, String> colorMap = new HashMap<String, String>();
@@ -77,11 +79,20 @@ public class PdfHelper {
 		if (page != null) {
 			contentStream.close();
 		}
-		page = new PDPage(PDRectangle.A4);
+		
+		page = new PDPage( this.pageSize);
+		if (this.landscape) {
+			page= new PDPage(new PDRectangle(page.getMediaBox().getHeight(), page.getMediaBox().getWidth()));
+		} 
+		
 		pageHeight = page.getMediaBox().getHeight();
 		pageWidth = page.getMediaBox().getWidth();
 		doc.addPage(page);
 		contentStream = new PDPageContentStream(doc, page);
+		
+//		if (this.landscape) {
+//			contentStream.transform(new Matrix(0, 1, -1, 0, pageWidth, 0));
+//		}
 
 	}
 
@@ -369,7 +380,9 @@ public class PdfHelper {
 		return new PrintedBounds(relX, relY, relX + pw, relY + ph);
 	}
 
-	public void printPage(String id, List<PrintComponent> children) throws IOException {
+	public void printPage(String id, List<PrintComponent> children, PDRectangle rectangle, boolean landscape) throws IOException {
+		this.pageSize= rectangle;
+		this.landscape= landscape;
 		startDoc();
 		while (reportState != ReportState.finish) {
 			printGroup(id, 0, 0, null, null, null, null, 0, null, children);
