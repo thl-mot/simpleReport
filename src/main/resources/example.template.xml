@@ -1,4 +1,4 @@
-<template orientation="landscape" w="400" h="400">
+<template orientation="portrait" paperSize="A4">
 	<group id="1" borderWidth="1" x="0" y="20" borderColor="red">
 		<text x="0" y="0" field="textField-1" color="00FF00" />
 		<line x="0" y="20" w="100" h="0" color="0000FF" />

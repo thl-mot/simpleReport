@@ -40,7 +40,7 @@ public class Group extends PrintComponent {
 
 		return bounds;
 	}
-
+	
 	@XmlAttribute
 	public Float getBorderWidth() {
 		return borderWidth;

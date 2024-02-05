@@ -16,7 +16,6 @@
 	</properties>
 
 	<dependencies>
-
 		<!-- JAXB API -->
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
@@ -52,6 +51,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 
 	<distributionManagement>
 		<repository>
